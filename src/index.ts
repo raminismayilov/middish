@@ -32,11 +32,11 @@ const getBscCharHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewa
 }
 
 const getBscCharByIdHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    console.log(event)
     const charId = Number.parseInt(event.pathParameters?.id ?? "0");
+    const existingCharIds = bscChars.map(char => char.id);
 
-    if (charId > 3) {
-        throw createError(400, { message: JSON.stringify({ message: "Wrong id" }) });
+    if (!existingCharIds.includes(charId)) {
+        throw createError(400, { message: JSON.stringify({ message: "No char with that ID" }) });
     }
 
     return {
