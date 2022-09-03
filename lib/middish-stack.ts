@@ -1,16 +1,28 @@
+import * as path from "path";
 import * as cdk from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import {Construct} from 'constructs';
+import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs";
+import {LambdaRestApi} from "aws-cdk-lib/aws-apigateway";
 
 export class MiddishStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
+    constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+        super(scope, id, props);
 
-    // The code that defines your stack goes here
+        const simpleLambda = new NodejsFunction(this, "SimpleLambda", {
+            entry: path.join(__dirname, "..", "src", "index.ts"),
+            handler: "handler"
+        });
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'MiddishQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
-  }
+        const simpleApi = new LambdaRestApi(this, "SimpleApi", {
+            restApiName: "BscCharService",
+            handler: simpleLambda,
+            proxy: false,
+        });
+
+        const bscChars = simpleApi.root.addResource("chars");
+        bscChars.addMethod("GET");
+
+        const singleBscChar = bscChars.addResource("{id}");
+        singleBscChar.addMethod("GET");
+    }
 }
